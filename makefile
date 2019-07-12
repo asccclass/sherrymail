@@ -43,8 +43,5 @@ log:
 rm:
 	docker rm ${ContainerName}
 
-test:
-	MailAccount=andyliu MailPassword=2iduudgR@2019 MailServer=smtp.sinica.edu.tw MailServerPort=25 go run sherrymail.go
-	
 login:
 	docker exec -it ${ContainerName} /bin/bash
