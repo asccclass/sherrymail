@@ -1,8 +1,6 @@
 package main
 
 import (
-   "os"
-   log "github.com/sirupsen/logrus"
    "bytes"
    "fmt"
    "html/template"
@@ -85,6 +83,7 @@ func NewSherryMail(account, password, mailserver,port string)(*SherryMail) {
    }
 }
 
+/*
 func main() {
    account := os.Getenv("MailAccount")
    if  account == "" {
@@ -115,7 +114,7 @@ func main() {
       Name: "許功蓋",
       URL:  "http://www.justdrink.com.tw",
    }
-   sm.SetRequest("andyliu@sinica.edu.tw", []string{"justgps@gmail.com"}, "Hello Andy!", "Hello, World!")
+   sm.SetRequest("andyliu@sinica.edu.tw", []string{"justgps@gmail.com"}, "測試信件標題! ", "Hello, World!")
    if err := sm.Request.ParseTemplate("template/template.html", templateData); err == nil {
       ok, err := sm.SendEmail()
       if err != nil {
@@ -127,4 +126,4 @@ func main() {
       fmt.Println("Send email ok.")
    }
 }
-
+*/
