@@ -42,6 +42,10 @@ log:
 
 rm:
 	docker rm ${ContainerName}
+	docker ps -a
 
 login:
 	docker exec -it ${ContainerName} /bin/bash
+
+test:
+	PORT=11012 MailAccount=andyliu MailPassword=2iduudgR@2019 MailServer=smtp.sinica.edu.tw MailServerPort=25 ./sherrymail

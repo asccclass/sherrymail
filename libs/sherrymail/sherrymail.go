@@ -1,10 +1,9 @@
 package main
 
 import (
-   "os"
-   log "github.com/sirupsen/logrus"
    "bytes"
    "fmt"
+   "io/ioutil"
    "html/template"
    "net/smtp"
    "net/textproto"
@@ -61,6 +60,23 @@ type SherryMail struct {
    Request		*Request
 }
 
+// 取得Email相關訊息，透過emailrep.io提供的服務
+func(sm *SherryMail) CheckEmailValid(email string)(interface{}, error) {
+   if email == "" {
+      return nil, fmt.Errorf("No Email.")
+   }
+   resp, err := http.Get("emailrep.io/" + email)
+   if err != nil {
+      retrun nil, err
+   }
+   defer resp.Body.Close()
+   if resp.StatusCode/100 == 4 || resp.StatusCode/100 == 5 {
+      return nil, fmt.Errorf("the response was returned with a %d", res.StatusCode)
+   }
+   data, _ := ioutil.ReadAll(resp.Body)
+   return data, nil
+}
+
 func(sm *SherryMail) SetRequest(from string, tos []string, subject, body string)(error) {
    sm.Request = NewRequest(from, tos, subject, body)
    return nil
@@ -85,6 +101,7 @@ func NewSherryMail(account, password, mailserver,port string)(*SherryMail) {
    }
 }
 
+/*
 func main() {
    account := os.Getenv("MailAccount")
    if  account == "" {
@@ -115,7 +132,7 @@ func main() {
       Name: "許功蓋",
       URL:  "http://www.justdrink.com.tw",
    }
-   sm.SetRequest("andyliu@sinica.edu.tw", []string{"justgps@gmail.com"}, "Hello Andy!", "Hello, World!")
+   sm.SetRequest("andyliu@sinica.edu.tw", []string{"justgps@gmail.com"}, "測試信件標題! ", "Hello, World!")
    if err := sm.Request.ParseTemplate("template/template.html", templateData); err == nil {
       ok, err := sm.SendEmail()
       if err != nil {
@@ -127,4 +144,4 @@ func main() {
       fmt.Println("Send email ok.")
    }
 }
-
+*/
