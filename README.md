@@ -2,12 +2,19 @@
 
 
 ### Install
+* get library
 ```
-create envfile ( vi envfile)
+go get github.com/asccclass/sherrymail
+```
+
+* create envfile (vi envfile)
+```
+ailServer=smtp.abc.com.tw
+MailServerPort=25
 MailAccount=
 MailPassword=
-MailServer=smtp.abc.com
-MailServerPort=25
+DocumentRoot=www/html
+PORT=80
 ```
 
 
