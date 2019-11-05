@@ -1,27 +1,15 @@
-package main
+package sherrymail
 
 import (
-   "bytes"
    "fmt"
+   "bytes"
+   "strings"
    "io/ioutil"
    "html/template"
+   "net/http"
    "net/smtp"
-   "net/textproto"
+   "github.com/gorilla/mux"
 )
-
-//Request struct
-type Request struct {
-   Typez   	string
-   Headers	textproto.MIMEHeader
-   ReplyTo	[]string
-   from		string
-   to		[]string
-   Cc		[]string
-   Bcc		[]string
-   SubjectText	[]byte		// Plaintext message (optional)
-   subject	string
-   body		string
-}
 
 // 設定信件格式
 func (r *Request)SetMailType(mailtype string) {
@@ -42,24 +30,6 @@ func (r *Request) ParseTemplate(templateFileName string, data interface{}) error
    return nil
 }
 
-func NewRequest(from string, to []string, subject, body string) *Request {
-   return &Request{
-      Typez:	"text/html",
-      Headers:	textproto.MIMEHeader{},
-      from:	from,
-      to:	to,
-      subject:	subject,
-      body:	body,
-   }
-}
-
-type SherryMail struct {
-   Auth			smtp.Auth
-   MailServer		string
-   MailServerPort	string
-   Request		*Request
-}
-
 // 取得Email相關訊息，透過emailrep.io提供的服務
 func(sm *SherryMail) CheckEmailValid(email string)(interface{}, error) {
    if email == "" {
@@ -67,11 +37,11 @@ func(sm *SherryMail) CheckEmailValid(email string)(interface{}, error) {
    }
    resp, err := http.Get("emailrep.io/" + email)
    if err != nil {
-      retrun nil, err
+      return nil, err
    }
    defer resp.Body.Close()
    if resp.StatusCode/100 == 4 || resp.StatusCode/100 == 5 {
-      return nil, fmt.Errorf("the response was returned with a %d", res.StatusCode)
+      return nil, fmt.Errorf("the response was returned with ")
    }
    data, _ := ioutil.ReadAll(resp.Body)
    return data, nil
@@ -82,66 +52,33 @@ func(sm *SherryMail) SetRequest(from string, tos []string, subject, body string)
    return nil
 }
 
-func(sm *SherryMail) SendEmail() (bool, error) {
-   mime := "MIME-version: 1.0;\nContent-Type: " + sm.Request.Typez + "; charset=\"UTF-8\";\n\n"
-   subject := "Subject: " + sm.Request.subject + "!\n"
-   msg := []byte(subject + mime + "\n" + sm.Request.body)
+func(sm *SherryMail) SendEmail(req *SendInfos) (*SendInfos, error) {
+   var body strings.Builder
+   body.WriteString("Subject: ")
+   body.WriteString(req.Subject)
+   body.WriteString("!\n")
+   if req.ReplyTo.Email != "" {
+      body.WriteString("Return-Path: <")
+      body.WriteString(req.ReplyTo.Email)
+      body.WriteString(">\n")
+   }
+   body.WriteString("MIME-version: 1.0;\nContent-Type: ")
+   body.WriteString(req.Typez)
+   body.WriteString("; charset=\"UTF-8\";\n\n\n")
+   body.WriteString(req.Content)
 
-   if err := smtp.SendMail(sm.MailServer, sm.Auth, sm.Request.from, sm.Request.to, msg); err != nil {
-      return false, fmt.Errorf("Send email error: %v", err)
-   }
-   return true, nil
-}
-
-func NewSherryMail(account, password, mailserver,port string)(*SherryMail) {
-   auth := smtp.PlainAuth("", account, password, mailserver)
-   return &SherryMail {
-      Auth: auth,
-      MailServer: mailserver + ":" + port, 
-   }
-}
-
-/*
-func main() {
-   account := os.Getenv("MailAccount")
-   if  account == "" {
-      log.Printf("須設定Email Server登入帳號")
-      os.Exit(0)
-   }
-   password := os.Getenv("MailPassword")
-   if password == "" {
-      log.Printf("須設定Email Server登入密碼")
-      os.Exit(0)
-   }
-   mailServer := os.Getenv("MailServer")
-   if mailServer == "" {
-      log.Printf("須設定Email Server IP/DNS.")
-      os.Exit(0)
-   }
-   mailServerPort := os.Getenv("MailServerPort")
-   if mailServerPort == "" {
-      log.Printf("須設定Email Server PORT.")
-      os.Exit(0)
-   }
-
-   sm := NewSherryMail(account, password, mailServer, mailServerPort)
-   templateData := struct {
-      Name string
-      URL  string
-   }{
-      Name: "許功蓋",
-      URL:  "http://www.justdrink.com.tw",
-   }
-   sm.SetRequest("andyliu@sinica.edu.tw", []string{"justgps@gmail.com"}, "測試信件標題! ", "Hello, World!")
-   if err := sm.Request.ParseTemplate("template/template.html", templateData); err == nil {
-      ok, err := sm.SendEmail()
-      if err != nil {
-         fmt.Printf("Send Email error:%v\n", err)
+   for i, e := range req.Receiver {
+      to := []string{e.Email}
+      if err := smtp.SendMail(sm.MailServer, sm.Auth, req.Sender.Email, to, []byte(body.String())); err != nil {
+         req.Receiver[i].Result = err.Error()
       } else {
-         fmt.Printf("Send Email result:%v\n", ok)
+         req.Receiver[i].Result = "ok"
       }
-   } else {
-      fmt.Println("Send email ok.")
    }
+   return req, nil
 }
-*/
+
+// AddCustomerRouter
+func(c *SherryMail) AddCustomerRouter(router *mux.Router) {
+   router.HandleFunc("/sendmail", c.SendEmailFromWeb).Methods("POST")           // 送信
+}

@@ -2,7 +2,7 @@ RELEASE=0.0.1
 COMMIT?=$(shell git rev-parse --short HEAD)
 BUILD_TIME?=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 APP?=app
-PORT?=11009
+PORT?=10009
 ImageName?=sherrymail
 ContainerName?=mail
 MKFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
@@ -29,10 +29,17 @@ docker: build
 run: docker cleanDocker
 	docker run -d --name ${ContainerName} \
 	-v /etc/localtime:/etc/localtime:ro \
-	-v ${CURDIR}/template:/app/template  \
+	-v /etc/ssl/certs:/etc/ssl/certs \
+	-v /etc/pki/ca-trust/extracted/pem:/etc/pki/ca-trust/extracted/pem \
+	-v /etc/pki/ca-trust/extracted/openssl:/etc/pki/ca-trust/extracted/openssl \
+	-v ${CURDIR}template:/app/template  \
+	-v ${CURDIR}www:/app/www  \
+	--env-file ${CURDIR}envfile \
 	-p ${PORT}:80 \
 	--env-file ${CURDIR}envfile \
 	${ImageName}
+	sh clean.sh
+	make log
 
 stop:
 	docker stop ${ContainerName}
@@ -49,3 +56,4 @@ login:
 
 test:
 	PORT=11012 MailAccount=andyliu MailPassword=2iduudgR@2019 MailServer=smtp.sinica.edu.tw MailServerPort=25 ./sherrymail
+re:stop rm run

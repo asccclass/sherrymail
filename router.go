@@ -4,20 +4,20 @@ package main
 import(
    "github.com/gorilla/mux"
    "github.com/asccclass/staticfileserver"
-   "github.com/asccclass/serverstatus"
+   // "github.com/asccclass/serverstatus"
+   "github.com/asccclass/sherrymail/libs/sherrymail"
 )
 
 // Create your Router function
 func NewRouter(srv *SherryServer.ShryServer, documentRoot string)(*mux.Router) {
    router := mux.NewRouter()
-/*
+
    // Rank router
-   rank, err := rank.NewRank(dbconnect)
-   if err != nil {
-      panic(err)
-   }
-   rank.AddRankRouter(router)			// 客戶等級 Router
-*/
+   mail := sherrymail.NewSherryMail(srv)
+   mail.AddRouter(router)
+
+   //logger
+   router.Use(SherryServer.ZapLogger(srv.Logger))
 
    // Static File server
    staticfileserver := SherryServer.StaticFileServer{documentRoot, "index.html"}
