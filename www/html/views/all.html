@@ -1,0 +1,103 @@
+<div class="container">
+   <h1 class="mt-4 mb-3">報名表
+      <small>祕書處使用</small>
+   </h1>
+   <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+         <a href="#!/jhupat/youngerboss">首頁</a>
+      </li>
+      <li class="breadcrumb-item"><a href="#!/jhupat/plg">報名結果資訊</a></li>
+      <li class="breadcrumb-item active">全部調查表資訊</a></li>
+   </ol>
+
+   <div class="spinner-border text-danger" role="status" ng-show="getData == 1">
+      <span class="sr-only">取得資料中...</span>
+   </div>
+
+   <!-- 全部報名表 -->
+<div ng-show="showPersonView == 0">
+   <div class="text-right text-danger">
+        <div class="form-row">
+           <div class="form-group col-md-4 text-left">
+              活動列表：
+              <select class="form-control" ng-options="n.name group by n.school for n in activities" ng-model="selectActName"
+               ng-change="setFilter()">
+                 <option value=""></option>
+              </select>
+           </div>
+           <div class="text-left form-group col-md-2">
+              姓名：
+              <input class="form-control" ng-model="filterName">
+           </div>
+           <div class="form-group col-md-6">
+              <button class="btn btn-warning" ng-click="ClearFilter()">重設過濾條件</button>
+              <button class="btn btn-warning" ng-click="collectPerson()">使用人名排活動</button>
+              <button class="btn btn-primary" ng-click="downloadExcel()">下載Excel</button>
+           </div>
+         </div>
+         <div>
+            共計：{{ lists.length }}筆報名資料
+         </div>
+   </div>
+   <table class="table table-striped table-bordered">
+      <thead>
+      <tr>
+         <th scope="col">#</th>
+         <th scope="col">活動舉辦學校</th>
+         <th scope="col">活動名稱</th>
+         <th scope="col">場次</th>
+         <th scope="col">報名者學校</th>
+         <th scope="col"><a href="" ng-click="sortX('name')">學生姓名</a></th>
+         <th scope="col">年級</th>
+         <th scope="col">報名時間</th>
+      </tr>
+      </thead>
+      <tbody>
+         <tr ng-repeat="list in lists | orderBy:sortCondition | filter:search | filter:filterName">
+            <th scope="row">{{ $index+1 }}</th>
+            <th>{{ list.school }}</th>
+            <td>{{ list.activity }}</td>
+            <td>{{ list["報名場次"] }}</td>
+            <td>{{ list["就讀學校"] }}</td>
+            <td>{{ list["姓名"] }}</td>
+            <td>{{ list["就讀年級"] }}</td>
+            <td>{{ list["報名時間"] }}</td>
+         </tr>
+      </tbody>
+   </table>
+</div>
+
+   <div ng-show="showPersonView == 1" ng-class="text-right">
+      <div class="form-group col-md-6">
+         <button class="btn btn-warning" ng-click="Backlist()">返回列表</button>
+         <button class="btn btn-primary" ng-click="sendEmail()">開始發信</button>
+      </div>
+      <table class="table table-striped table-bordered">
+      <thead>
+      <tr>
+         <th scope="col">#</th>
+         <th scope="col">姓名</th>
+         <th scope="col">報名者學校</th>
+         <th scope="col">年級</th>
+         <th scope="col">參加活動</th>
+         <th scope="col">Email</th>
+      </tr>
+      </thead>
+      <tbody>
+         <tr ng-repeat="list in persons | orderBy:['school','degree']">
+            <th scope="row">{{ $index+1 }}</th>
+            <td>{{ list.name }}</td>
+            <th>{{ list.school }}</th>
+            <td>{{ list.degree }}</td>
+            <td>
+               <li ng-repeat="a in list.acts | orderBy:['session']">
+                  {{ a.school }} &nbsp;&nbsp; {{ a.activity }}&nbsp;&nbsp;{{a.session}} 
+               </li>
+            </td>
+            <td ng-class="list.send == 0 ? 'text-secondary' : 'text-primary'">{{ list.email }}</td>
+         </tr>
+      </tbody>
+   </table>
+   </div>
+
+</div>

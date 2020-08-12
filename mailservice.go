@@ -20,8 +20,12 @@ func main() {
       fmt.Printf("須設定Email Server IP/DNS.")
       os.Exit(0)
    }
+   templateRoot := os.Getenv("TemplateRoot")
+   if templateRoot == "" {
+      templateRoot = "www/template"
+   }
 
-   server, err := SherryServer.NewServer(":" + port, documentRoot)
+   server, err := SherryServer.NewServer(":" + port, documentRoot, templateRoot)
    if err != nil {
       panic(err)
    }

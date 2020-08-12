@@ -1,8 +1,9 @@
-RELEASE=0.0.1
+RELEASE=0.1
 COMMIT?=$(shell git rev-parse --short HEAD)
 BUILD_TIME?=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 APP?=app
 PORT?=10009
+Account?=justgps
 ImageName?=sherrymail
 ContainerName?=mail
 MKFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
@@ -22,7 +23,7 @@ build:
 	-o ${APP}
 
 docker: build
-	docker build -t ${ImageName} .
+	docker build -t ${Account}/${ImageName}:${RELEASE} .
 	rm -f ${APP}
 	docker images
 
@@ -37,7 +38,7 @@ run: docker cleanDocker
 	--env-file ${CURDIR}envfile \
 	-p ${PORT}:80 \
 	--env-file ${CURDIR}envfile \
-	${ImageName}
+	${Account}/${ImageName}:${RELEASE}
 	sh clean.sh
 	make log
 

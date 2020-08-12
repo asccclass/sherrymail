@@ -56,11 +56,11 @@ func(sm *SherryMail) SendEmail(req *SendInfos) (*SendInfos, error) {
    var body strings.Builder
    body.WriteString("Subject: ")
    body.WriteString(req.Subject)
-   body.WriteString("!\n")
+   body.WriteString("\r\n")
    if req.ReplyTo.Email != "" {
       body.WriteString("Return-Path: <")
       body.WriteString(req.ReplyTo.Email)
-      body.WriteString(">\n")
+      body.WriteString(">\r\n")
    }
    body.WriteString("MIME-version: 1.0;\nContent-Type: ")
    body.WriteString(req.Typez)

@@ -32,7 +32,7 @@ type SherryMail struct {
 
 // 收／送信件資訊
 type Receiver struct {
-   Name	string	`json:"name"`
+   Name		string		`json:"name"`
    Email	string		`json:"email"`
    Result	string		`json:"result"`
 }
