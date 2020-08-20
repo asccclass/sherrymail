@@ -9,6 +9,7 @@ import (
    "net/http"
    "net/smtp"
    "github.com/gorilla/mux"
+   "github.com/asccclass/sherrytime"
 )
 
 // 設定信件格式
@@ -67,12 +68,14 @@ func(sm *SherryMail) SendEmail(req *SendInfos) (*SendInfos, error) {
    body.WriteString("; charset=\"UTF-8\";\n\n\n")
    body.WriteString(req.Content)
 
+   st := sherrytime.NewSherryTime("Asia/Taipei", "-")
+
    for i, e := range req.Receiver {
       to := []string{e.Email}
       if err := smtp.SendMail(sm.MailServer, sm.Auth, req.Sender.Email, to, []byte(body.String())); err != nil {
-         req.Receiver[i].Result = err.Error()
+         req.Receiver[i].Result = st.Now() + " " + err.Error()
       } else {
-         req.Receiver[i].Result = "ok"
+         req.Receiver[i].Result = st.Now()
       }
    }
    return req, nil

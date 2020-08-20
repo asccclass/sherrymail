@@ -2,6 +2,7 @@ package sherrymail
 
 import(
    "fmt"
+   "time"
    "bytes"
    "io/ioutil"
    "net/http"
@@ -15,13 +16,6 @@ func(s *SherryMail) WebPrint(w http.ResponseWriter, message string) {
    w.Header().Set("Content-Type", "application/json;charset=UTF-8")
    w.WriteHeader(http.StatusOK)
    fmt.Fprintf(w, message)
-}
-
-// 輸出web error
-func(s *SherryMail) Error2Web(w http.ResponseWriter, err error) {
-   w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-   w.WriteHeader(http.StatusOK)
-   fmt.Fprintf(w, "{\"errMsg\": \"%s(server)\"}", err.Error())
 }
 
 // 處理信件樣板
@@ -44,35 +38,41 @@ func(sm *SherryMail) ParseTemplateFromWeb(sf SendInfos)(string, error) {
 func (s *SherryMail) SendEmailFromWeb(w http.ResponseWriter, r *http.Request) {
    body, err := ioutil.ReadAll(r.Body)
    if err != nil {
-      s.Error2Web(w, err) 
+      s.Srv.Error.Error2Web(w, err) 
       return
    }
-   cs := SendInfos{}
-   err = json.Unmarshal(body, &cs)
+   css := []SendInfos{}
+   err = json.Unmarshal(body, &css)
    if err != nil {
-      s.Error2Web(w, err)
+      s.Srv.Error.Error2Web(w, err)
       return
    }
-   cs.Headers = textproto.MIMEHeader{}
-   if cs.Typez == "" {
-      cs.Typez = "text/html"
-   }
-
-   if cs.Template != "" {
-      cs.Content, err = s.ParseTemplateFromWeb(cs)
+   // 迴圈
+   var result []SendInfos
+   for _, cs := range css {
+      cs.Headers = textproto.MIMEHeader{}
+      if cs.Typez == "" {
+         cs.Typez = "text/html"
+      }
+   
+      if cs.Template != "" {
+         cs.Content, err = s.ParseTemplateFromWeb(cs)
+         if err != nil {
+            s.Srv.Error.Error2Web(w, err)
+            return
+         }
+      }
+      c, err := s.SendEmail(&cs)
       if err != nil {
-         s.Error2Web(w, err)
+         s.Srv.Error.Error2Web(w, err)
          return
       }
+      time.Sleep(time.Duration(2)*time.Second)
+      result = append(result, *c)
    }
-   c, err := s.SendEmail(&cs)
+   b, err := json.Marshal(&result)
    if err != nil {
-      s.Error2Web(w, err)
-      return
-   }
-   b, err := json.Marshal(&c)
-   if err != nil {
-      s.Error2Web(w, err)
+      s.Srv.Error.Error2Web(w, err)
       return
    }
    s.WebPrint(w, string(b))

@@ -13,8 +13,8 @@ type Request struct {
    Typez        string
    Headers      textproto.MIMEHeader
    ReplyTo      []string
-   from         string
-   to           []string
+   From         string
+   To           []string
    Cc           []string
    Bcc          []string
    SubjectText  []byte          // Plaintext message (optional)
@@ -27,7 +27,7 @@ type SherryMail struct {
    MailServer           string
    MailServerPort       string
    Request              *Request
-   Server		*SherryServer.ShryServer
+   Srv			*SherryServer.ShryServer
 }
 
 // 收／送信件資訊
@@ -60,8 +60,8 @@ func NewRequest(from string, to []string, subject, body string) *Request {
    return &Request{
       Typez:    "text/html",
       Headers:  textproto.MIMEHeader{},
-      from:     from,
-      to:       to,
+      From:     from,
+      To:       to,
       subject:  subject,
       body:     body,
    }
@@ -78,7 +78,7 @@ func NewSherryMail(srv *SherryServer.ShryServer)(*SherryMail) {
    return &SherryMail {
       Auth: auth,
       MailServer: mailserver + ":" + port,
-      Server: srv,
+      Srv: srv,
    }
 }
 
