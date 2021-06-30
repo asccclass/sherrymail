@@ -16,7 +16,7 @@ clean:
 	rm -f ${APP}
 
 build:
-	GOOS=linux GOARCH=amd64 go build -tags netgo \
+	GOOS=linux GOARCH=amd64 GO111MODULE=off go build -tags netgo \
 	-ldflags "-s -w -X version.Release=${RELEASE} \
 	-X version.Commit=${COMMIT} \
 	-X version.BuildTime=${BUILD_TIME}" \
